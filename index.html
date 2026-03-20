@@ -1421,7 +1421,7 @@ body.dark .toolbar-select option { background: var(--card); }
         <label>Valor Total (R$)</label>
         <div class="amount-row">
           <span class="amount-prefix">R$</span>
-          <input type="number" id="f-valor" placeholder="0,00" step="0.01" min="0">
+          <input type="text" id="f-valor" placeholder="0,00" inputmode="decimal" oninput="mascaraValor(this)">
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
@@ -1677,7 +1677,7 @@ body.dark .toolbar-select option { background: var(--card); }
           <label>Valor (R$)</label>
           <div class="amount-row">
             <span class="amount-prefix">R$</span>
-            <input type="number" id="edit-valor" step="0.01" min="0">
+            <input type="text" id="edit-valor" inputmode="decimal" oninput="mascaraValor(this)">
           </div>
         </div>
         <div class="field">
@@ -2136,7 +2136,7 @@ function save() {
 function addCobranca(confirmarInadimplente = false, confirmarLimite = false) {
   const nome  = document.getElementById('f-nome').value.trim();
   const desc  = document.getElementById('f-desc').value.trim();
-  const valor = parseFloat(document.getElementById('f-valor').value);
+  const valor = parseFloat(document.getElementById('f-valor').value.replace(/\./g,'').replace(',','.'));
   const compra = document.getElementById('f-compra').value;
   const venc   = document.getElementById('f-vencimento').value;
   const tel    = document.getElementById('f-tel').value.trim();
@@ -3190,7 +3190,7 @@ function abrirEdicao(id) {
   document.getElementById('edit-id').value         = c.id;
   document.getElementById('edit-nome').value        = c.nome;
   document.getElementById('edit-desc').value        = c.desc || '';
-  document.getElementById('edit-valor').value       = c.valor;
+  document.getElementById('edit-valor').value = c.valor ? c.valor.toFixed(2).replace('.',',') : '';
   document.getElementById('edit-compra').value      = c.compra;
   document.getElementById('edit-vencimento').value  = c.vencimento;
   document.getElementById('edit-tel').value         = c.tel || '';
@@ -3210,7 +3210,7 @@ function abrirEdicao(id) {
 function salvarEdicao() {
   const id    = document.getElementById('edit-id').value;
   const nome  = document.getElementById('edit-nome').value.trim();
-  const valor = parseFloat(document.getElementById('edit-valor').value);
+  const valor = parseFloat(document.getElementById('edit-valor').value.replace(/\./g,'').replace(',','.'));
   const compra     = document.getElementById('edit-compra').value;
   const vencimento = document.getElementById('edit-vencimento').value;
 
@@ -3601,6 +3601,17 @@ function getClientes() {
 }
 function saveClientes(clientes) {
   localStorage.setItem(CLIENTES_KEY, JSON.stringify(clientes));
+}
+
+function mascaraValor(el) {
+  // Remove tudo que não seja dígito
+  let v = el.value.replace(/\D/g, '');
+  if (!v) { el.value = ''; return; }
+  // Converte para número com 2 casas decimais
+  v = (parseInt(v, 10) / 100).toFixed(2);
+  // Formata: milhar com ponto, decimal com vírgula
+  v = v.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = v;
 }
 
 function mascaraCNPJ(el) {
